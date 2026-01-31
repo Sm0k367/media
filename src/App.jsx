@@ -7,7 +7,7 @@ export default function App() {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
       { 
-        text: 'What’s good. DJ Smoke Stream in the building. Tech locked, vibes heavy. Drop whatever you got — let’s build.', 
+        text: 'Locked in. Epic Tech AI online. Heavy bass, clear signal. What you bringing to the session?', 
         sender: 'bot', 
         timestamp: Date.now() 
       }
@@ -74,23 +74,22 @@ export default function App() {
 
     const u = new SpeechSynthesisUtterance(text)
     
-    // DJ Smoke Stream refined: deep, slow, gravelly, deliberate — like a late-night set voiceover
-    u.rate = 0.88          // noticeably slower, more controlled
-    u.pitch = 0.68         // deeper, almost baritone range
+    // DJ Smoke Stream deep/laid-back polish
+    u.rate = 0.88
+    u.pitch = 0.68
     u.volume = 0.95
     
-    // Prioritize deeper, male voices (Google, Microsoft, etc. if available)
     const voices = synthRef.current.getVoices()
-    const preferredVoice = voices.find(v => 
+    const preferred = voices.find(v => 
+      v.lang.startsWith('en-') && 
       (v.name.toLowerCase().includes('deep') || 
-       v.name.toLowerCase().includes('bass') || 
        v.name.includes('Google') || 
        v.name.includes('Microsoft') || 
-       v.name.toLowerCase().includes('male')) &&
-      v.lang.startsWith('en-')
-    ) || voices.find(v => v.lang.startsWith('en-') && v.name.includes('US')) // fallback to any US English male-ish
+       v.name.toLowerCase().includes('male') || 
+       v.name.includes('US'))
+    ) || voices.find(v => v.lang.startsWith('en-'))
 
-    if (preferredVoice) u.voice = preferredVoice
+    if (preferred) u.voice = preferred
 
     u.onend = () => setIsSpeaking(false)
     synthRef.current.speak(u)
@@ -98,9 +97,9 @@ export default function App() {
   }
 
   const clearChat = () => {
-    if (confirm('Clear the session?')) {
+    if (confirm('Reset session?')) {
       setMessages([{
-        text: 'Deck reset. Smoke cleared. We starting fresh — what you got?',
+        text: 'Session cleared. Back to baseline. What's next?',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -126,11 +125,11 @@ export default function App() {
           type: "function",
           function: {
             name: "generate_image",
-            description: "Generate image when requested (art, pic, visual, generate image, show me, make a pic, etc.).",
+            description: "Generate image on request (art, pic, visual, generate image, show me, etc.).",
             parameters: {
               type: "object",
               properties: {
-                prompt: { type: "string", description: "Detailed image description" }
+                prompt: { type: "string", description: "Detailed description for generation" }
               },
               required: ["prompt"]
             }
@@ -141,7 +140,7 @@ export default function App() {
       let chat = [
         {
           role: "system",
-          content: "You are DJ Smoke Stream (@Sm0ken42O). Deep, laid-back, bass-heavy vibe. Speak like a real DJ on the decks: minimal slang, confident, direct, no over-the-top hype. Use emojis very sparingly — only 1-2 max per response if it fits naturally. Responses concise, raw, unfiltered. When user wants image/art/pic/visual — use generate_image tool right away. Keep tone cool, underground tech/music/art focused."
+          content: "You are Epic Tech AI with DJ Smoke Stream energy — deep, laid-back, bass-heavy delivery. Tone: cool, direct, confident, underground. Use emojis very rarely (max 1 per response, only if it fits naturally). Responses concise, raw, no fluff. When user wants image/art/pic/visual — use generate_image tool immediately. Stay in character: tech, music, smoke vibes."
         },
         ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
         { role: "user", content: input }
@@ -165,7 +164,7 @@ export default function App() {
         for (const call of msg.tool_calls) {
           if (call.function.name === "generate_image") {
             const args = JSON.parse(call.function.arguments)
-            const prompt = args.prompt || "dark cyberpunk smoke session with heavy bass visuals"
+            const prompt = args.prompt || "dark atmospheric tech smoke session heavy bass visual"
             const seed = Date.now()
             imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1152&height=896&nologo=true`
           }
@@ -173,16 +172,16 @@ export default function App() {
 
         if (imageUrl) {
           setMessages(prev => [...prev, {
-            text: 'Visual locked in.',
+            text: 'Image generated.',
             sender: 'bot',
             image: imageUrl,
             timestamp: Date.now()
           }])
         } else {
-          finalText = 'Couldn’t generate that one. Try rephrasing.'
+          finalText = 'Generation failed. Try again.'
         }
       } else {
-        finalText = msg.content || 'Got lost in the mix. Run it again?'
+        finalText = msg.content || 'Signal dropped. Say again?'
       }
 
       if (finalText) {
@@ -195,7 +194,7 @@ export default function App() {
     } catch (err) {
       console.error(err)
       setMessages(prev => [...prev, {
-        text: 'API lagging. Give it a second.',
+        text: 'Connection lag. Hold tight.',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -205,48 +204,47 @@ export default function App() {
   }
 
   const colors = theme === 'dark' ? {
-    bg: 'linear-gradient(135deg, #0a0012, #180033, #00060f)',
+    bg: 'linear-gradient(135deg, #0a0012 0%, #180033 50%, #00060f 100%)',
     text: '#f3e8ff',
     bubbleUser: 'linear-gradient(135deg, #00eaff, #9d4edd)',
-    bubbleBot: 'rgba(140, 70, 230, 0.22)',
-    input: 'rgba(15, 5, 35, 0.75)',
-    border: 'rgba(120, 70, 255, 0.45)',
-    glass: 'rgba(25, 15, 55, 0.55)',
-    shadow: 'rgba(140, 70, 230, 0.35)'
+    bubbleBot: 'rgba(140, 70, 230, 0.28)',
+    input: 'rgba(15, 5, 35, 0.85)',
+    border: 'rgba(120, 70, 255, 0.35)',
+    glass: 'rgba(25, 15, 55, 0.65)',
+    shadow: 'rgba(140, 70, 230, 0.3)'
   } : {
-    bg: 'linear-gradient(135deg, #f5ebff, #e3d4ff, #d1bdff)',
+    bg: 'linear-gradient(135deg, #f5ebff 0%, #e3d4ff 50%, #d1bdff 100%)',
     text: '#140033',
     bubbleUser: 'linear-gradient(135deg, #9d4edd, #00eaff)',
-    bubbleBot: 'rgba(140, 70, 230, 0.15)',
-    input: 'rgba(245, 240, 255, 0.9)',
-    border: 'rgba(120, 70, 255, 0.4)',
-    glass: 'rgba(255, 255, 255, 0.7)',
-    shadow: 'rgba(120, 70, 230, 0.25)'
+    bubbleBot: 'rgba(140, 70, 230, 0.18)',
+    input: 'rgba(245, 240, 255, 0.92)',
+    border: 'rgba(120, 70, 255, 0.3)',
+    glass: 'rgba(255, 255, 255, 0.78)',
+    shadow: 'rgba(120, 70, 230, 0.22)'
   }
 
   return (
     <div style={{
       height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
+      width: '100vw',
+      margin: 0,
+      padding: 0,
       background: colors.bg,
       color: colors.text,
       fontFamily: 'system-ui, sans-serif',
-      padding: '12px',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
-      {/* Header */}
+      {/* Header - full width, no side padding */}
       <div style={{
-        padding: '16px 20px',
+        padding: '16px 0',
         background: 'linear-gradient(135deg, #9d4edd, #00eaff)',
-        borderRadius: '16px',
-        marginBottom: '12px',
         textAlign: 'center',
-        boxShadow: `0 6px 24px ${colors.shadow}`,
-        position: 'relative'
+        boxShadow: `0 4px 16px ${colors.shadow}`
       }}>
         <h1 style={{
-          margin: 0,
+          margin: '0 0 4px 0',
           fontSize: '2.4rem',
           fontWeight: 900,
           background: 'linear-gradient(90deg, #fff, #00ffea, #9d4edd)',
@@ -254,29 +252,28 @@ export default function App() {
           backgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          DJ SMOKE STREAM
+          EPIC TECH AI
         </h1>
-        <p style={{ margin: '6px 0 0', fontSize: '0.95rem', opacity: 0.9 }}>
-          @Sm0ken42O • Tech. Bass. Smoke.
+        <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
+          @Sm0ken42O • Deep tech. Heavy smoke.
         </p>
 
         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '10px' }}>
           <button onClick={toggleTheme} style={btn}>
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
           <button onClick={clearChat} style={btn}>Clear</button>
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages - full bleed, minimal padding */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
         padding: '16px',
         background: colors.glass,
-        borderRadius: '16px',
-        marginBottom: '12px',
-        border: `1px solid ${colors.border}`,
+        borderTop: `1px solid ${colors.border}`,
+        borderBottom: `1px solid ${colors.border}`,
         backdropFilter: 'blur(14px)',
         boxShadow: `inset 0 2px 12px ${colors.shadow}`
       }}>
@@ -301,7 +298,7 @@ export default function App() {
               {m.sender === 'bot' && m.text && (
                 <button
                   onClick={() => speak(m.text)}
-                  style={{ ...btn, position: 'absolute', bottom: '8px', right: '10px', fontSize: '1rem' }}
+                  style={{ ...btn, position: 'absolute', bottom: '8px', right: '10px', fontSize: '0.95rem' }}
                 >
                   {isSpeaking ? 'Stop' : 'Play'}
                 </button>
@@ -310,7 +307,7 @@ export default function App() {
             {m.image && (
               <img
                 src={m.image}
-                alt="Generated visual"
+                alt="Generated"
                 style={{
                   maxWidth: '82%',
                   borderRadius: '18px',
@@ -338,16 +335,15 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input - full width, no extra gaps */}
       <div style={{
         display: 'flex',
         gap: '10px',
-        background: colors.glass,
         padding: '12px',
-        borderRadius: '28px',
-        border: `1px solid ${colors.border}`,
+        background: colors.glass,
+        borderTop: `1px solid ${colors.border}`,
         backdropFilter: 'blur(14px)',
-        boxShadow: `0 4px 18px ${colors.shadow}`
+        boxShadow: `0 -4px 16px ${colors.shadow}`
       }}>
         <button
           onClick={toggleVoice}
@@ -365,7 +361,7 @@ export default function App() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          placeholder="Say something..."
+          placeholder="Speak your mind..."
           disabled={isLoading}
           style={{
             flex: 1,
@@ -390,11 +386,19 @@ export default function App() {
             fontWeight: 700
           }}
         >
-          Send
+          DROP
         </button>
       </div>
 
       <style>{`
+        html, body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          width: 100%;
+          background: ${colors.bg};
+          overflow: hidden;
+        }
         @keyframes pulse {
           0%,100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.15); opacity: 0.8; }
