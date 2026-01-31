@@ -1,14 +1,13 @@
-/* Global resets for full-bleed and responsiveness */
-*,
-*::before,
-*::after {
+/* Global resets for full-bleed and cross-device compatibility */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 html {
-  font-size: 100%; /* Base font size */
+  font-size: 100%; /* Base font (16px default) */
+  scroll-behavior: smooth;
 }
 
 body {
@@ -21,10 +20,12 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  touch-action: manipulation; /* Faster touch events */
+  touch-action: manipulation; /* Faster touch response */
+  -webkit-tap-highlight-color: transparent; /* No blue tap highlights on mobile */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
-/* #root must be full screen */
+/* #root full screen */
 #root {
   height: 100vh;
   height: -webkit-fill-available;
@@ -34,7 +35,7 @@ body {
   overflow: hidden;
 }
 
-/* Scrollbar consistent on all devices */
+/* Scrollbar styling consistent on devices */
 ::-webkit-scrollbar {
   width: 0.4375rem; /* 7px */
   height: 0.4375rem;
@@ -53,32 +54,35 @@ body {
   background: rgba(120, 70, 255, 0.6);
 }
 
-/* Media queries for responsive scaling */
+/* Responsive media queries */
 @media (max-width: 768px) {
   html {
-    font-size: 90%; /* Slightly smaller base on tablets/mobile */
-  }
-
-  body {
-    -webkit-tap-highlight-color: transparent; /* No tap highlights on mobile */
+    font-size: 93.75%; /* 15px base on tablets */
   }
 }
 
 @media (max-width: 480px) {
   html {
-    font-size: 85%; /* Even smaller on phones for better fit */
+    font-size: 87.5%; /* 14px base on phones */
   }
 }
 
-/* Prevent iOS zoom on input focus */
+/* Input focus zoom fix for iOS */
 input, textarea {
-  font-size: 16px; /* Minimum for iOS to prevent zoom */
+  font-size: 16px !important; /* Minimum to prevent zoom on focus */
 }
 
-/* Full screen for landscape mode */
+/* Landscape mode full coverage */
 @media (orientation: landscape) {
   html, body, #root {
     height: 100vh;
     width: 100vw;
+  }
+}
+
+/* Prevent content shift on keyboard open */
+@supports (-webkit-touch-callout: none) {
+  body {
+    height: -webkit-fill-available;
   }
 }
