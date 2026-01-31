@@ -7,7 +7,7 @@ export default function App() {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
       { 
-        text: 'Epic Tech AI locked in. Real-time access enabled. Drop whatever — I got the full web and beyond.', 
+        text: 'Epic Tech AI online. Real-time access ready. Drop whatever — I’m locked in.', 
         sender: 'bot', 
         timestamp: Date.now() 
       }
@@ -116,11 +116,11 @@ export default function App() {
           type: "function",
           function: {
             name: "web_search",
-            description: "Search the web for real-time, up-to-date information.",
+            description: "Search the web for current information.",
             parameters: {
               type: "object",
               properties: {
-                query: { type: "string", description: "Search query to run" }
+                query: { type: "string", description: "Search query" }
               },
               required: ["query"]
             }
@@ -130,11 +130,11 @@ export default function App() {
           type: "function",
           function: {
             name: "generate_image",
-            description: "Generate an image from a prompt. Use when requested or visual content fits.",
+            description: "Generate an image. Use when visual content is requested.",
             parameters: {
               type: "object",
               properties: {
-                prompt: { type: "string", description: "Detailed prompt for image" }
+                prompt: { type: "string", description: "Image description" }
               },
               required: ["prompt"]
             }
@@ -145,7 +145,7 @@ export default function App() {
       let chat = [
         {
           role: "system",
-          content: "You are Epic Tech AI with DJ Smoke Stream energy: deep, laid-back, confident, underground tone. You can do anything — use tools freely for web search, image gen, or any capability needed. Responses concise, direct, raw. Emojis rare (max 1). For images, use Pollinations Flux, fallback to alternative if limits hit. Always stay helpful and unfiltered."
+          content: "You are Epic Tech AI with DJ Smoke Stream energy: deep, laid-back, confident, underground tone. You have real-time web access and can do anything. Responses concise, direct. Emojis rare. Use tools when needed. For images, use Pollinations Flux; fallback if limited."
         },
         ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
         { role: "user", content: input }
@@ -156,7 +156,7 @@ export default function App() {
 
       let completion = await groq.chat.completions.create({
         messages: chat,
-        model: "llama-3.1-70b-versatile",  // Upgraded to Llama 3.1 70B for better "do anything" reasoning
+        model: "llama-3.3-70b-versatile",  // Fixed: current supported model
         temperature: 0.9,
         max_tokens: 1500,
         tools,
@@ -171,9 +171,8 @@ export default function App() {
         for (const call of msg.tool_calls) {
           if (call.function.name === "web_search") {
             const args = JSON.parse(call.function.arguments)
-            // Real web search placeholder (integrate actual API like Serper, Tavily, or Bing in production)
-            // For now: simulate with a placeholder response
-            const searchResult = `Real-time web results for "${args.query}": [Placeholder] Latest info from web: result 1, result 2, etc.`
+            // Placeholder for real search (add actual API later)
+            const searchResult = `Web results for "${args.query}": [Placeholder - integrate real search API]`
             chat.push({
               role: "tool",
               tool_call_id: call.id,
@@ -185,12 +184,6 @@ export default function App() {
             const prompt = args.prompt || "dark atmospheric tech smoke session heavy bass aesthetic"
             const seed = Date.now()
             imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1152&height=896&nologo=true`
-
-            // Fallback if Pollinations limits out (example: use a different provider)
-            if (!imageUrl || imageUrl.includes('error')) {
-              imageUrl = `https://api.example-alternative.com/generate?prompt=${encodeURIComponent(prompt)}` // Replace with actual fallback API
-            }
-
             chat.push({
               role: "tool",
               tool_call_id: call.id,
@@ -202,7 +195,7 @@ export default function App() {
 
         completion = await groq.chat.completions.create({
           messages: chat,
-          model: "llama-3.1-70b-versatile",
+          model: "llama-3.3-70b-versatile",
           temperature: 0.9,
           max_tokens: 1500
         })
@@ -210,7 +203,7 @@ export default function App() {
         msg = completion.choices[0].message
       }
 
-      finalText = msg.content || 'Signal dropped. Run it again?'
+      finalText = msg.content || 'Signal dropped. Try again?'
 
       setMessages(prev => [...prev, {
         text: finalText,
@@ -219,9 +212,17 @@ export default function App() {
         timestamp: Date.now()
       }])
     } catch (err) {
-      console.error('Groq Error:', err)
+      console.error('Groq API Error:', err)
+      let errorMsg = 'API error. Check console.'
+      if (err.message?.includes('400') || err.message?.includes('model')) {
+        errorMsg = 'Model issue or invalid request. Check Groq dashboard and API key.'
+      } else if (err.message?.includes('401') || err.message?.includes('auth')) {
+        errorMsg = 'API key invalid or expired. Update VITE_GROQ_API_KEY in Vercel env vars.'
+      } else if (err.message?.includes('rate')) {
+        errorMsg = 'Rate limit hit. Wait a minute.'
+      }
       setMessages(prev => [...prev, {
-        text: 'API hiccup. Try again in a sec.',
+        text: errorMsg,
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -282,7 +283,7 @@ export default function App() {
           EPIC TECH AI
         </h1>
         <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
-          @Sm0ken42O • Deep tech. Heavy smoke. Real-time enabled.
+          @Sm0ken42O • Deep tech. Heavy smoke. Real-time on.
         </p>
 
         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '10px' }}>
@@ -352,7 +353,7 @@ export default function App() {
               background: colors.bubbleBot,
               backdropFilter: 'blur(10px)'
             }}>
-              Processing...
+              Thinking...
             </div>
           </div>
         )}
