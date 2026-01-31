@@ -1,24 +1,30 @@
-# 💯 Epic Tech AI 🔥 @Sm0ken42O
+# Epic Tech AI Bot
 
-Cannabis & caffeine fueled chatbot — talks hype, generates images on demand via Groq + Pollinations.ai Flux. Voice in/out, themes, local persistence. Unfiltered vibes.
+A laid-back AI chatbot with DJ Smoke Stream vibes — deep, confident, underground tone. Powered by Groq LLM, real-time web search, image generation with Pollinations Flux (fallback capable), voice input/output, theme toggle, local chat persistence.
 
-## Quick Start
+## Features
+- Conversational AI with tool calling for web search and image gen
+- Real-time info lookup (placeholder - add actual search API)
+- Image gen with fallback if limits hit
+- Voice recognition & text-to-speech with deep voice polish
+- Dark/light theme
+- Responsive on all devices (mobile/desktop, portrait/landscape)
+- Full-bleed gradient background (no white edges)
 
-1. Clone & install:
-   ```bash
-   git clone <repo>
-   cd epic-tech-ai
-   npm i
+## Setup
+1. Clone repo: `git clone https://github.com/Sm0k367/media`
+2. Install deps: `npm i`
+3. Add `.env` with `VITE_GROQ_API_KEY=your_key` (from Groq console)
+4. Run locally: `npm run dev`
+5. Deploy to Vercel: Add VITE_GROQ_API_KEY in env vars
 
-Add .env with your Groq key (from .env.example)
-Run:bash
+## Usage
+- Type prompts — AI handles anything, uses tools as needed
+- For real web search, replace placeholder with actual API (e.g. Serper, Tavily)
+- Image fallback: Add alternative provider API
 
-npm run dev
+## Known Issues
+- Favicon 404: Add public/favicon.ico
+- API errors: Ensure Groq key is valid in Vercel env
 
-Vercel DeployPush to GitHub
-Import in Vercel
-Add VITE_GROQ_API_KEY env var
-Deploy
-
-Hit it with "generate a cyberpunk weed farm" or whatever — it'll cook text + image 
-
+Built with Vite + React. @Sm0ken42O
