@@ -2,12 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#0a0012" />
     <meta name="description" content="Epic Tech AI – deep tech conversations powered by Groq & Flux" />
     <title>Epic Tech AI</title>
 
-    <!-- Resets for full-bleed on all devices -->
+    <!-- Favicon links to fix 404 (assume public/favicon.ico, etc. exist or add them) -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
     <style>
       *, *::before, *::after {
         box-sizing: border-box;
@@ -19,15 +24,12 @@
         margin: 0 !important;
         padding: 0 !important;
         height: 100vh !important;
-        height: -webkit-fill-available !important; /* iOS full screen */
+        height: -webkit-fill-available !important;
         width: 100vw !important;
         overflow: hidden !important;
         background: linear-gradient(135deg, #0a0012 0%, #180033 50%, #00060f 100%) !important;
         color: #f3e8ff;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        touch-action: manipulation; /* Better mobile touch */
+        font-family: system-ui, -apple-system, sans-serif;
       }
 
       #root {
@@ -39,10 +41,8 @@
         overflow: hidden;
       }
 
-      /* Scrollbar for all devices */
       ::-webkit-scrollbar {
         width: 7px;
-        height: 7px;
       }
 
       ::-webkit-scrollbar-track {
@@ -52,17 +52,6 @@
       ::-webkit-scrollbar-thumb {
         background: rgba(120, 70, 255, 0.4);
         border-radius: 4px;
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background: rgba(120, 70, 255, 0.6);
-      }
-
-      /* Mobile media query example (adjust in App.jsx for app-specific) */
-      @media (max-width: 768px) {
-        html, body, #root {
-          font-size: 14px; /* Smaller base font for mobile */
-        }
       }
     </style>
   </head>
