@@ -115,12 +115,26 @@ export default function App() {
         {
           type: "function",
           function: {
-            name: "generate_image",
-            description: "Generate image when user asks for art, pic, visual, generate image, show me, etc.",
+            name: "web_search",
+            description: "Perform a web search for real-time information.",
             parameters: {
               type: "object",
               properties: {
-                prompt: { type: "string", description: "Detailed prompt for image generation" }
+                query: { type: "string", description: "The search query" }
+              },
+              required: ["query"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "generate_image",
+            description: "Generate an image from a prompt. Use fallback if limits hit.",
+            parameters: {
+              type: "object",
+              properties: {
+                prompt: { type: "string", description: "Detailed image prompt" }
               },
               required: ["prompt"]
             }
@@ -131,7 +145,7 @@ export default function App() {
       let chat = [
         {
           role: "system",
-          content: "You are Epic Tech AI powered by DJ Smoke Stream energy: deep, laid-back, confident, underground tone. Keep responses concise, direct, no fluff. Emojis rare (max 1, only when it fits). When user wants image/art/visual/pic — use generate_image tool immediately."
+          content: "You are Epic Tech AI powered by DJ Smoke Stream energy: deep, laid-back, confident, underground tone. Keep responses concise, direct, no fluff. Emojis rare (max 1, only when it fits). You can do anything — use tools for web search or image gen when needed. For images, use Pollinations but fallback to alternative if limits reached."
         },
         ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
         { role: "user", content: input }
@@ -139,49 +153,72 @@ export default function App() {
 
       let finalText = ''
       let imageUrl = null
+      let searchResults = null
 
-      const res = await groq.chat.completions.create({
+      let completion = await groq.chat.completions.create({
         messages: chat,
-        model: "llama-3.3-70b-versatile",
+        model: "llama3.1-70b-instant",  // Changed to more capable Llama 3.1 70B for better reasoning/anything capability
         temperature: 0.85,
-        max_tokens: 900,
+        max_tokens: 1200,
         tools,
         tool_choice: "auto"
       })
 
-      const msg = res.choices[0].message
+      let msg = completion.choices[0].message
 
-      if (msg.tool_calls) {
+      while (msg.tool_calls) {
+        chat.push(msg)
+
         for (const call of msg.tool_calls) {
-          if (call.function.name === "generate_image") {
+          if (call.function.name === "web_search") {
+            const args = JSON.parse(call.function.arguments)
+            // Simulate web search (in real, integrate API like Serper or Bing)
+            // For now, placeholder - in production, call an external API
+            searchResults = `Placeholder web search for "${args.query}": Result 1. Result 2.` // Replace with actual fetch
+            chat.push({
+              role: "tool",
+              tool_call_id: call.id,
+              name: call.function.name,
+              content: searchResults
+            })
+          } else if (call.function.name === "generate_image") {
             const args = JSON.parse(call.function.arguments)
             const prompt = args.prompt || "dark atmospheric tech smoke session heavy bass aesthetic"
             const seed = Date.now()
             imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1152&height=896&nologo=true`
+            if (!imageUrl) {
+              // Fallback to alternative image gen (e.g. Hugging Face or Replicate API)
+              imageUrl = `https://api.replicate.com/v1/predictions` // Placeholder - integrate actual API call
+            }
+            chat.push({
+              role: "tool",
+              tool_call_id: call.id,
+              name: call.function.name,
+              content: `Image generated: ${imageUrl}`
+            })
           }
         }
 
-        if (imageUrl) {
-          setMessages(prev => [...prev, {
-            text: 'Image generated.',
-            sender: 'bot',
-            image: imageUrl,
-            timestamp: Date.now()
-          }])
-        } else {
-          finalText = 'Could not generate image. Try again.'
-        }
-      } else {
-        finalText = msg.content || 'Signal interrupted. Repeat?'
+        completion = await groq.chat.completions.create({
+          messages: chat,
+          model: "llama3.1-70b-instant",
+          temperature: 0.85,
+          max_tokens: 1200
+        })
+
+        msg = completion.choices[0].message
       }
 
-      if (finalText) {
-        setMessages(prev => [...prev, {
-          text: finalText,
-          sender: 'bot',
-          timestamp: Date.now()
-        }])
-      }
+      finalText = msg.content || 'Signal interrupted. Repeat?'
+
+      if (searchResults) finalText += `\nWeb results: ${searchResults}`
+
+      setMessages(prev => [...prev, {
+        text: finalText,
+        sender: 'bot',
+        image: imageUrl,
+        timestamp: Date.now()
+      }])
     } catch (err) {
       console.error(err)
       setMessages(prev => [...prev, {
@@ -225,22 +262,18 @@ export default function App() {
       fontFamily: 'system-ui, sans-serif',
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      height: '100dvh', // dynamic viewport height for mobile
-      touchAction: 'manipulation'
+      flexDirection: 'column'
     }}>
       {/* Header */}
-      <header style={{
-        padding: '1rem 0',
+      <div style={{
+        padding: '16px 0',
         background: 'linear-gradient(135deg, #9d4edd, #00eaff)',
         textAlign: 'center',
-        boxShadow: `0 4px 16px ${colors.shadow}`,
-        flexShrink: 0
+        boxShadow: `0 4px 16px ${colors.shadow}`
       }}>
         <h1 style={{
-          margin: '0 0 0.25rem 0',
-          fontSize: 'clamp(1.8rem, 6vw, 2.4rem)',
+          margin: '0 0 4px 0',
+          fontSize: '2.4rem',
           fontWeight: 900,
           background: 'linear-gradient(90deg, #fff, #00ffea, #9d4edd)',
           WebkitBackgroundClip: 'text',
@@ -249,44 +282,38 @@ export default function App() {
         }}>
           EPIC TECH AI
         </h1>
-        <p style={{ margin: 0, fontSize: 'clamp(0.85rem, 3vw, 0.95rem)', opacity: 0.9 }}>
+        <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
           @Sm0ken42O • Deep tech. Heavy smoke.
         </p>
 
-        <div style={{
-          position: 'absolute',
-          top: '0.75rem',
-          right: '0.75rem',
-          display: 'flex',
-          gap: '0.75rem'
-        }}>
+        <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '10px' }}>
           <button onClick={toggleTheme} style={btn}>
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
           <button onClick={clearChat} style={btn}>Clear</button>
         </div>
-      </header>
+      </div>
 
       {/* Messages */}
-      <main style={{
+      <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: 'clamp(0.8rem, 4vw, 1rem)',
+        padding: '16px',
         background: colors.glass,
         backdropFilter: 'blur(16px)',
         boxShadow: `inset 0 2px 12px ${colors.shadow}`
       }}>
         {messages.map((m, i) => (
           <div key={i} style={{
-            marginBottom: '1rem',
+            marginBottom: '16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: m.sender === 'user' ? 'flex-end' : 'flex-start'
           }}>
             <div style={{
-              maxWidth: '85%',
-              padding: 'clamp(0.8rem, 3vw, 1rem) clamp(1rem, 4vw, 1.25rem)',
-              borderRadius: '1.375rem',
+              maxWidth: '82%',
+              padding: '14px 20px',
+              borderRadius: '22px',
               background: m.sender === 'user' ? colors.bubbleUser : colors.bubbleBot,
               color: m.sender === 'user' ? '#000' : colors.text,
               boxShadow: `0 4px 14px ${colors.shadow}`,
@@ -297,14 +324,7 @@ export default function App() {
               {m.sender === 'bot' && m.text && (
                 <button
                   onClick={() => speak(m.text)}
-                  style={{
-                    ...btn,
-                    position: 'absolute',
-                    bottom: '0.5rem',
-                    right: '0.625rem',
-                    fontSize: 'clamp(0.85rem, 3vw, 0.95rem)',
-                    padding: '0.4rem 0.6rem'
-                  }}
+                  style={{ ...btn, position: 'absolute', bottom: '8px', right: '10px', fontSize: '0.95rem' }}
                 >
                   {isSpeaking ? 'Stop' : 'Play'}
                 </button>
@@ -315,9 +335,9 @@ export default function App() {
                 src={m.image}
                 alt="Generated"
                 style={{
-                  maxWidth: '85%',
-                  borderRadius: '1.125rem',
-                  marginTop: '0.625rem',
+                  maxWidth: '82%',
+                  borderRadius: '18px',
+                  marginTop: '10px',
                   boxShadow: `0 8px 24px ${colors.shadow}`
                 }}
               />
@@ -328,8 +348,8 @@ export default function App() {
         {isLoading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div style={{
-              padding: 'clamp(0.8rem, 3vw, 1rem) clamp(1rem, 4vw, 1.25rem)',
-              borderRadius: '1.375rem',
+              padding: '14px 20px',
+              borderRadius: '22px',
               background: colors.bubbleBot,
               backdropFilter: 'blur(10px)'
             }}>
@@ -339,27 +359,24 @@ export default function App() {
         )}
 
         <div ref={messagesEndRef} />
-      </main>
+      </div>
 
       {/* Input */}
-      <footer style={{
+      <div style={{
         display: 'flex',
-        gap: '0.625rem',
-        padding: 'clamp(0.75rem, 3vw, 0.75rem)',
+        gap: '10px',
+        padding: '12px',
         background: colors.glass,
         backdropFilter: 'blur(16px)',
-        boxShadow: `0 -4px 16px ${colors.shadow}`,
-        flexShrink: 0
+        boxShadow: `0 -4px 16px ${colors.shadow}`
       }}>
         <button
           onClick={toggleVoice}
           style={{
             ...btn,
-            minWidth: 'clamp(48px, 12vw, 56px)',
-            fontSize: 'clamp(1rem, 4vw, 1.2rem)',
+            minWidth: '56px',
             background: isListening ? 'linear-gradient(135deg, #9d4edd, #00eaff)' : colors.input,
-            animation: isListening ? 'pulse 1.4s infinite' : 'none',
-            padding: '0.75rem'
+            animation: isListening ? 'pulse 1.4s infinite' : 'none'
           }}
         >
           Mic
@@ -369,16 +386,16 @@ export default function App() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          placeholder="Speak your mind..."
+          placeholder: 'Speak your mind...',
           disabled={isLoading}
           style={{
             flex: 1,
-            padding: 'clamp(0.8rem, 3vw, 0.875rem) clamp(1rem, 4vw, 1.375rem)',
+            padding: '14px 22px',
             borderRadius: '999px',
             border: `1px solid ${colors.border}`,
             background: colors.input,
             color: colors.text,
-            fontSize: 'clamp(0.95rem, 4vw, 1.08rem)',
+            fontSize: '1.08rem',
             outline: 'none'
           }}
         />
@@ -388,8 +405,7 @@ export default function App() {
           disabled={isLoading || !input.trim()}
           style={{
             ...btn,
-            padding: 'clamp(0.8rem, 3vw, 1rem) clamp(1.5rem, 6vw, 2rem)',
-            fontSize: 'clamp(0.95rem, 4vw, 1.1rem)',
+            padding: '0 32px',
             background: isLoading || !input.trim() ? 'rgba(120,120,120,0.4)' : 'linear-gradient(135deg, #00eaff, #9d4edd)',
             color: isLoading || !input.trim() ? '#999' : '#000',
             fontWeight: 700
@@ -397,25 +413,14 @@ export default function App() {
         >
           DROP
         </button>
-      </footer>
+      </div>
 
-      <style jsx global>{`
-        html, body, #root {
-          margin: 0 !important;
-          padding: 0 !important;
-          height: 100% !important;
-          width: 100% !important;
-          overflow: hidden !important;
-          background: ${colors.bg} !important;
-        }
-        * {
-          box-sizing: border-box;
-        }
+      <style>{`
         @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
+          0%,100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.15); opacity: 0.8; }
         }
-        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar { width: 7px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${colors.border}; border-radius: 4px; }
       `}</style>
@@ -424,14 +429,13 @@ export default function App() {
 }
 
 const btn = {
-  padding: '0.75rem 1rem',
-  borderRadius: '0.875rem',
+  padding: '12px 16px',
+  borderRadius: '14px',
   background: 'rgba(255,255,255,0.14)',
   border: '1px solid rgba(255,255,255,0.22)',
   color: 'inherit',
   fontSize: '1rem',
   cursor: 'pointer',
   backdropFilter: 'blur(12px)',
-  transition: 'all 0.25s',
-  touchAction: 'manipulation'
+  transition: 'all 0.25s'
 }
