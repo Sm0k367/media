@@ -99,7 +99,7 @@ select {
   }
 }
 
-/* Prevent content from being cut off when virtual keyboard appears */
+/* Prevent content shift on keyboard open */
 @media (max-height: 500px) {
   body, #root {
     height: auto;
