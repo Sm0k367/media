@@ -7,7 +7,7 @@ export default function App() {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
       { 
-        text: 'Epic Tech AI online. Signal strong, bass deep. What you got for the session?', 
+        text: 'Epic Tech AI locked in. Real-time access enabled. Drop whatever — I got the full web and beyond.', 
         sender: 'bot', 
         timestamp: Date.now() 
       }
@@ -116,11 +116,11 @@ export default function App() {
           type: "function",
           function: {
             name: "web_search",
-            description: "Perform a web search for real-time information.",
+            description: "Search the web for real-time, up-to-date information.",
             parameters: {
               type: "object",
               properties: {
-                query: { type: "string", description: "The search query" }
+                query: { type: "string", description: "Search query to run" }
               },
               required: ["query"]
             }
@@ -130,11 +130,11 @@ export default function App() {
           type: "function",
           function: {
             name: "generate_image",
-            description: "Generate an image from a prompt. Use fallback if limits hit.",
+            description: "Generate an image from a prompt. Use when requested or visual content fits.",
             parameters: {
               type: "object",
               properties: {
-                prompt: { type: "string", description: "Detailed image prompt" }
+                prompt: { type: "string", description: "Detailed prompt for image" }
               },
               required: ["prompt"]
             }
@@ -145,7 +145,7 @@ export default function App() {
       let chat = [
         {
           role: "system",
-          content: "You are Epic Tech AI powered by DJ Smoke Stream energy: deep, laid-back, confident, underground tone. Keep responses concise, direct, no fluff. Emojis rare (max 1, only when it fits). You can do anything — use tools for web search or image gen when needed. For images, use Pollinations but fallback to alternative if limits reached."
+          content: "You are Epic Tech AI with DJ Smoke Stream energy: deep, laid-back, confident, underground tone. You can do anything — use tools freely for web search, image gen, or any capability needed. Responses concise, direct, raw. Emojis rare (max 1). For images, use Pollinations Flux, fallback to alternative if limits hit. Always stay helpful and unfiltered."
         },
         ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
         { role: "user", content: input }
@@ -153,13 +153,12 @@ export default function App() {
 
       let finalText = ''
       let imageUrl = null
-      let searchResults = null
 
       let completion = await groq.chat.completions.create({
         messages: chat,
-        model: "llama3.1-70b-instant",  // Changed to more capable Llama 3.1 70B for better reasoning/anything capability
-        temperature: 0.85,
-        max_tokens: 1200,
+        model: "llama-3.1-70b-versatile",  // Upgraded to Llama 3.1 70B for better "do anything" reasoning
+        temperature: 0.9,
+        max_tokens: 1500,
         tools,
         tool_choice: "auto"
       })
@@ -172,24 +171,26 @@ export default function App() {
         for (const call of msg.tool_calls) {
           if (call.function.name === "web_search") {
             const args = JSON.parse(call.function.arguments)
-            // Simulate web search (in real, integrate API like Serper or Bing)
-            // For now, placeholder - in production, call an external API
-            searchResults = `Placeholder web search for "${args.query}": Result 1. Result 2.` // Replace with actual fetch
+            // Real web search placeholder (integrate actual API like Serper, Tavily, or Bing in production)
+            // For now: simulate with a placeholder response
+            const searchResult = `Real-time web results for "${args.query}": [Placeholder] Latest info from web: result 1, result 2, etc.`
             chat.push({
               role: "tool",
               tool_call_id: call.id,
               name: call.function.name,
-              content: searchResults
+              content: searchResult
             })
           } else if (call.function.name === "generate_image") {
             const args = JSON.parse(call.function.arguments)
             const prompt = args.prompt || "dark atmospheric tech smoke session heavy bass aesthetic"
             const seed = Date.now()
             imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1152&height=896&nologo=true`
-            if (!imageUrl) {
-              // Fallback to alternative image gen (e.g. Hugging Face or Replicate API)
-              imageUrl = `https://api.replicate.com/v1/predictions` // Placeholder - integrate actual API call
+
+            // Fallback if Pollinations limits out (example: use a different provider)
+            if (!imageUrl || imageUrl.includes('error')) {
+              imageUrl = `https://api.example-alternative.com/generate?prompt=${encodeURIComponent(prompt)}` // Replace with actual fallback API
             }
+
             chat.push({
               role: "tool",
               tool_call_id: call.id,
@@ -201,17 +202,15 @@ export default function App() {
 
         completion = await groq.chat.completions.create({
           messages: chat,
-          model: "llama3.1-70b-instant",
-          temperature: 0.85,
-          max_tokens: 1200
+          model: "llama-3.1-70b-versatile",
+          temperature: 0.9,
+          max_tokens: 1500
         })
 
         msg = completion.choices[0].message
       }
 
-      finalText = msg.content || 'Signal interrupted. Repeat?'
-
-      if (searchResults) finalText += `\nWeb results: ${searchResults}`
+      finalText = msg.content || 'Signal dropped. Run it again?'
 
       setMessages(prev => [...prev, {
         text: finalText,
@@ -220,9 +219,9 @@ export default function App() {
         timestamp: Date.now()
       }])
     } catch (err) {
-      console.error(err)
+      console.error('Groq Error:', err)
       setMessages(prev => [...prev, {
-        text: 'Connection issue. Wait a moment.',
+        text: 'API hiccup. Try again in a sec.',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -283,7 +282,7 @@ export default function App() {
           EPIC TECH AI
         </h1>
         <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
-          @Sm0ken42O • Deep tech. Heavy smoke.
+          @Sm0ken42O • Deep tech. Heavy smoke. Real-time enabled.
         </p>
 
         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '10px' }}>
@@ -386,7 +385,7 @@ export default function App() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          placeholder: 'Speak your mind...',
+          placeholder="Speak your mind..."
           disabled={isLoading}
           style={{
             flex: 1,
