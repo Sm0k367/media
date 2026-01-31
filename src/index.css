@@ -1,0 +1,84 @@
+/* Global resets for full-bleed and responsiveness */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%; /* Base font size */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  height: -webkit-fill-available;
+  width: 100vw;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation; /* Faster touch events */
+}
+
+/* #root must be full screen */
+#root {
+  height: 100vh;
+  height: -webkit-fill-available;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Scrollbar consistent on all devices */
+::-webkit-scrollbar {
+  width: 0.4375rem; /* 7px */
+  height: 0.4375rem;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 70, 255, 0.4);
+  border-radius: 0.25rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 70, 255, 0.6);
+}
+
+/* Media queries for responsive scaling */
+@media (max-width: 768px) {
+  html {
+    font-size: 90%; /* Slightly smaller base on tablets/mobile */
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent; /* No tap highlights on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 85%; /* Even smaller on phones for better fit */
+  }
+}
+
+/* Prevent iOS zoom on input focus */
+input, textarea {
+  font-size: 16px; /* Minimum for iOS to prevent zoom */
+}
+
+/* Full screen for landscape mode */
+@media (orientation: landscape) {
+  html, body, #root {
+    height: 100vh;
+    width: 100vw;
+  }
+}
