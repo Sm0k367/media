@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
-import './index.css'  // Global styles import - this makes all resets & media queries active
+import './index.css'  // Loads all global resets, media queries, and full-bleed rules
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
