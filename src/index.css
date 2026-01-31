@@ -1,4 +1,6 @@
-/* Global resets for full-bleed and cross-device compatibility */
+/* ==============================================
+   Global Resets & Full-Bleed Foundation
+   ============================================== */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -6,26 +8,28 @@
 }
 
 html {
-  font-size: 100%; /* Base font (16px default) */
+  font-size: 100%; /* 16px base */
   scroll-behavior: smooth;
+  height: 100%;
 }
 
 body {
   margin: 0;
   padding: 0;
   height: 100vh;
-  height: -webkit-fill-available;
+  height: -webkit-fill-available; /* iOS full-screen fix */
   width: 100vw;
   overflow: hidden;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  touch-action: manipulation; /* Faster touch response */
-  -webkit-tap-highlight-color: transparent; /* No blue tap highlights on mobile */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  touch-action: manipulation; /* Faster tap response */
+  -webkit-tap-highlight-color: transparent; /* No blue tap highlight on mobile */
+  -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+  background: linear-gradient(135deg, #0a0012 0%, #180033 50%, #00060f 100%);
 }
 
-/* #root full screen */
+/* Root container full coverage */
 #root {
   height: 100vh;
   height: -webkit-fill-available;
@@ -35,10 +39,10 @@ body {
   overflow: hidden;
 }
 
-/* Scrollbar styling consistent on devices */
+/* Scrollbar styling (no white space) */
 ::-webkit-scrollbar {
-  width: 0.4375rem; /* 7px */
-  height: 0.4375rem;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -47,32 +51,40 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(120, 70, 255, 0.4);
-  border-radius: 0.25rem;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(120, 70, 255, 0.6);
 }
 
-/* Responsive media queries */
+/* Prevent iOS zoom on input focus */
+input,
+textarea,
+select {
+  font-size: 16px; /* Minimum size to disable auto-zoom on iOS */
+}
+
+/* Responsive font & spacing scaling */
+@media (max-width: 1024px) {
+  html {
+    font-size: 95%; /* Slightly smaller on tablets */
+  }
+}
+
 @media (max-width: 768px) {
   html {
-    font-size: 93.75%; /* 15px base on tablets */
+    font-size: 90%;
   }
 }
 
 @media (max-width: 480px) {
   html {
-    font-size: 87.5%; /* 14px base on phones */
+    font-size: 85%; /* Phone-friendly base */
   }
 }
 
-/* Input focus zoom fix for iOS */
-input, textarea {
-  font-size: 16px !important; /* Minimum to prevent zoom on focus */
-}
-
-/* Landscape mode full coverage */
+/* Landscape full coverage */
 @media (orientation: landscape) {
   html, body, #root {
     height: 100vh;
@@ -80,9 +92,17 @@ input, textarea {
   }
 }
 
-/* Prevent content shift on keyboard open */
+/* iOS keyboard overlap fix (dynamic viewport) */
 @supports (-webkit-touch-callout: none) {
   body {
     height: -webkit-fill-available;
+  }
+}
+
+/* Prevent content from being cut off when virtual keyboard appears */
+@media (max-height: 500px) {
+  body, #root {
+    height: auto;
+    min-height: 100vh;
   }
 }
