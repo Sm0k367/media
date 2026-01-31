@@ -51,9 +51,7 @@ export default function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
-  }
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
 
   const toggleVoice = () => {
     if (isListening) {
@@ -79,10 +77,7 @@ export default function App() {
     const voices = synthRef.current.getVoices()
     const preferred = voices.find(v => 
       v.lang.startsWith('en-') && 
-      (v.name.toLowerCase().includes('deep') || 
-       v.name.includes('Google') || 
-       v.name.includes('Microsoft') || 
-       v.name.toLowerCase().includes('male'))
+      (v.name.toLowerCase().includes('deep') || v.name.includes('Google') || v.name.includes('Microsoft') || v.name.toLowerCase().includes('male'))
     ) || voices.find(v => v.lang.startsWith('en-'))
 
     if (preferred) u.voice = preferred
@@ -222,10 +217,7 @@ export default function App() {
   return (
     <div style={{
       position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
+      inset: 0,
       margin: 0,
       padding: 0,
       background: colors.bg,
@@ -233,18 +225,22 @@ export default function App() {
       fontFamily: 'system-ui, sans-serif',
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      height: '100vh',
+      height: '100dvh', // dynamic viewport height for mobile
+      touchAction: 'manipulation'
     }}>
       {/* Header */}
-      <div style={{
-        padding: '16px 0',
+      <header style={{
+        padding: '1rem 0',
         background: 'linear-gradient(135deg, #9d4edd, #00eaff)',
         textAlign: 'center',
-        boxShadow: `0 4px 16px ${colors.shadow}`
+        boxShadow: `0 4px 16px ${colors.shadow}`,
+        flexShrink: 0
       }}>
         <h1 style={{
-          margin: '0 0 4px 0',
-          fontSize: '2.4rem',
+          margin: '0 0 0.25rem 0',
+          fontSize: 'clamp(1.8rem, 6vw, 2.4rem)',
           fontWeight: 900,
           background: 'linear-gradient(90deg, #fff, #00ffea, #9d4edd)',
           WebkitBackgroundClip: 'text',
@@ -253,38 +249,44 @@ export default function App() {
         }}>
           EPIC TECH AI
         </h1>
-        <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
+        <p style={{ margin: 0, fontSize: 'clamp(0.85rem, 3vw, 0.95rem)', opacity: 0.9 }}>
           @Sm0ken42O • Deep tech. Heavy smoke.
         </p>
 
-        <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '10px' }}>
+        <div style={{
+          position: 'absolute',
+          top: '0.75rem',
+          right: '0.75rem',
+          display: 'flex',
+          gap: '0.75rem'
+        }}>
           <button onClick={toggleTheme} style={btn}>
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
           <button onClick={clearChat} style={btn}>Clear</button>
         </div>
-      </div>
+      </header>
 
       {/* Messages */}
-      <div style={{
+      <main style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '16px',
+        padding: 'clamp(0.8rem, 4vw, 1rem)',
         background: colors.glass,
         backdropFilter: 'blur(16px)',
         boxShadow: `inset 0 2px 12px ${colors.shadow}`
       }}>
         {messages.map((m, i) => (
           <div key={i} style={{
-            marginBottom: '16px',
+            marginBottom: '1rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: m.sender === 'user' ? 'flex-end' : 'flex-start'
           }}>
             <div style={{
-              maxWidth: '82%',
-              padding: '14px 20px',
-              borderRadius: '22px',
+              maxWidth: '85%',
+              padding: 'clamp(0.8rem, 3vw, 1rem) clamp(1rem, 4vw, 1.25rem)',
+              borderRadius: '1.375rem',
               background: m.sender === 'user' ? colors.bubbleUser : colors.bubbleBot,
               color: m.sender === 'user' ? '#000' : colors.text,
               boxShadow: `0 4px 14px ${colors.shadow}`,
@@ -295,7 +297,14 @@ export default function App() {
               {m.sender === 'bot' && m.text && (
                 <button
                   onClick={() => speak(m.text)}
-                  style={{ ...btn, position: 'absolute', bottom: '8px', right: '10px', fontSize: '0.95rem' }}
+                  style={{
+                    ...btn,
+                    position: 'absolute',
+                    bottom: '0.5rem',
+                    right: '0.625rem',
+                    fontSize: 'clamp(0.85rem, 3vw, 0.95rem)',
+                    padding: '0.4rem 0.6rem'
+                  }}
                 >
                   {isSpeaking ? 'Stop' : 'Play'}
                 </button>
@@ -306,9 +315,9 @@ export default function App() {
                 src={m.image}
                 alt="Generated"
                 style={{
-                  maxWidth: '82%',
-                  borderRadius: '18px',
-                  marginTop: '10px',
+                  maxWidth: '85%',
+                  borderRadius: '1.125rem',
+                  marginTop: '0.625rem',
                   boxShadow: `0 8px 24px ${colors.shadow}`
                 }}
               />
@@ -319,8 +328,8 @@ export default function App() {
         {isLoading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div style={{
-              padding: '14px 20px',
-              borderRadius: '22px',
+              padding: 'clamp(0.8rem, 3vw, 1rem) clamp(1rem, 4vw, 1.25rem)',
+              borderRadius: '1.375rem',
               background: colors.bubbleBot,
               backdropFilter: 'blur(10px)'
             }}>
@@ -330,24 +339,27 @@ export default function App() {
         )}
 
         <div ref={messagesEndRef} />
-      </div>
+      </main>
 
       {/* Input */}
-      <div style={{
+      <footer style={{
         display: 'flex',
-        gap: '10px',
-        padding: '12px',
+        gap: '0.625rem',
+        padding: 'clamp(0.75rem, 3vw, 0.75rem)',
         background: colors.glass,
         backdropFilter: 'blur(16px)',
-        boxShadow: `0 -4px 16px ${colors.shadow}`
+        boxShadow: `0 -4px 16px ${colors.shadow}`,
+        flexShrink: 0
       }}>
         <button
           onClick={toggleVoice}
           style={{
             ...btn,
-            minWidth: '56px',
+            minWidth: 'clamp(48px, 12vw, 56px)',
+            fontSize: 'clamp(1rem, 4vw, 1.2rem)',
             background: isListening ? 'linear-gradient(135deg, #9d4edd, #00eaff)' : colors.input,
-            animation: isListening ? 'pulse 1.4s infinite' : 'none'
+            animation: isListening ? 'pulse 1.4s infinite' : 'none',
+            padding: '0.75rem'
           }}
         >
           Mic
@@ -361,12 +373,12 @@ export default function App() {
           disabled={isLoading}
           style={{
             flex: 1,
-            padding: '14px 22px',
+            padding: 'clamp(0.8rem, 3vw, 0.875rem) clamp(1rem, 4vw, 1.375rem)',
             borderRadius: '999px',
             border: `1px solid ${colors.border}`,
             background: colors.input,
             color: colors.text,
-            fontSize: '1.08rem',
+            fontSize: 'clamp(0.95rem, 4vw, 1.08rem)',
             outline: 'none'
           }}
         />
@@ -376,7 +388,8 @@ export default function App() {
           disabled={isLoading || !input.trim()}
           style={{
             ...btn,
-            padding: '0 32px',
+            padding: 'clamp(0.8rem, 3vw, 1rem) clamp(1.5rem, 6vw, 2rem)',
+            fontSize: 'clamp(0.95rem, 4vw, 1.1rem)',
             background: isLoading || !input.trim() ? 'rgba(120,120,120,0.4)' : 'linear-gradient(135deg, #00eaff, #9d4edd)',
             color: isLoading || !input.trim() ? '#999' : '#000',
             fontWeight: 700
@@ -384,7 +397,7 @@ export default function App() {
         >
           DROP
         </button>
-      </div>
+      </footer>
 
       <style jsx global>{`
         html, body, #root {
@@ -402,7 +415,7 @@ export default function App() {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.15); opacity: 0.8; }
         }
-        ::-webkit-scrollbar { width: 7px; }
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${colors.border}; border-radius: 4px; }
       `}</style>
@@ -411,13 +424,14 @@ export default function App() {
 }
 
 const btn = {
-  padding: '12px 16px',
-  borderRadius: '14px',
+  padding: '0.75rem 1rem',
+  borderRadius: '0.875rem',
   background: 'rgba(255,255,255,0.14)',
   border: '1px solid rgba(255,255,255,0.22)',
   color: 'inherit',
   fontSize: '1rem',
   cursor: 'pointer',
   backdropFilter: 'blur(12px)',
-  transition: 'all 0.25s'
+  transition: 'all 0.25s',
+  touchAction: 'manipulation'
 }
