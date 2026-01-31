@@ -79,7 +79,10 @@ export default function App() {
     const voices = synthRef.current.getVoices()
     const preferred = voices.find(v => 
       v.lang.startsWith('en-') && 
-      (v.name.toLowerCase().includes('deep') || v.name.includes('Google') || v.name.includes('Microsoft') || v.name.toLowerCase().includes('male'))
+      (v.name.toLowerCase().includes('deep') || 
+       v.name.includes('Google') || 
+       v.name.includes('Microsoft') || 
+       v.name.toLowerCase().includes('male'))
     ) || voices.find(v => v.lang.startsWith('en-'))
 
     if (preferred) u.voice = preferred
@@ -92,7 +95,7 @@ export default function App() {
   const clearChat = () => {
     if (confirm('Clear session?')) {
       setMessages([{
-        text: 'Session reset. Clean slate. What's next?',
+        text: 'Session reset. Clean slate. What’s next?',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -200,26 +203,29 @@ export default function App() {
     bg: 'linear-gradient(135deg, #0a0012 0%, #180033 50%, #00060f 100%)',
     text: '#f3e8ff',
     bubbleUser: 'linear-gradient(135deg, #00eaff, #9d4edd)',
-    bubbleBot: 'rgba(140, 70, 230, 0.32)',
-    input: 'rgba(15, 5, 35, 0.9)',
-    border: 'rgba(120, 70, 255, 0.3)',
-    glass: 'rgba(25, 15, 55, 0.7)',
-    shadow: 'rgba(140, 70, 230, 0.28)'
+    bubbleBot: 'rgba(140, 70, 230, 0.35)',
+    input: 'rgba(15, 5, 35, 0.92)',
+    border: 'rgba(120, 70, 255, 0.28)',
+    glass: 'rgba(25, 15, 55, 0.75)',
+    shadow: 'rgba(140, 70, 230, 0.25)'
   } : {
     bg: 'linear-gradient(135deg, #f5ebff 0%, #e3d4ff 50%, #d1bdff 100%)',
     text: '#140033',
     bubbleUser: 'linear-gradient(135deg, #9d4edd, #00eaff)',
-    bubbleBot: 'rgba(140, 70, 230, 0.2)',
-    input: 'rgba(245, 240, 255, 0.95)',
-    border: 'rgba(120, 70, 255, 0.28)',
-    glass: 'rgba(255, 255, 255, 0.82)',
-    shadow: 'rgba(120, 70, 230, 0.2)'
+    bubbleBot: 'rgba(140, 70, 230, 0.22)',
+    input: 'rgba(245, 240, 255, 0.96)',
+    border: 'rgba(120, 70, 255, 0.25)',
+    glass: 'rgba(255, 255, 255, 0.85)',
+    shadow: 'rgba(120, 70, 230, 0.18)'
   }
 
   return (
     <div style={{
       position: 'fixed',
-      inset: 0,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       margin: 0,
       padding: 0,
       background: colors.bg,
@@ -259,7 +265,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Messages area */}
+      {/* Messages */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -326,7 +332,7 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input bar */}
+      {/* Input */}
       <div style={{
         display: 'flex',
         gap: '10px',
@@ -380,7 +386,7 @@ export default function App() {
         </button>
       </div>
 
-      <style>{`
+      <style jsx global>{`
         html, body, #root {
           margin: 0 !important;
           padding: 0 !important;
@@ -393,7 +399,7 @@ export default function App() {
           box-sizing: border-box;
         }
         @keyframes pulse {
-          0%,100% { transform: scale(1); opacity: 1; }
+          0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.15); opacity: 0.8; }
         }
         ::-webkit-scrollbar { width: 7px; }
