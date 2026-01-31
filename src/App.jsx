@@ -7,7 +7,7 @@ export default function App() {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
       { 
-        text: 'Ayyyeeee what’s good world?! DJ Smoke Stream in the cut — blazin’ that tech fire, sippin’ that triple espresso ☕🌿💨 Hit ya boy with whatever you got… let’s turn up 🔥', 
+        text: 'What’s good. DJ Smoke Stream in the building. Tech locked, vibes heavy. Drop whatever you got — let’s build.', 
         sender: 'bot', 
         timestamp: Date.now() 
       }
@@ -74,21 +74,23 @@ export default function App() {
 
     const u = new SpeechSynthesisUtterance(text)
     
-    // DJ Smoke Stream voice polish — deep, slow, hype, slightly echoed vibe
-    u.rate = 0.92          // slower, more deliberate
-    u.pitch = 0.75         // deeper voice
-    u.volume = 1.0
+    // DJ Smoke Stream refined: deep, slow, gravelly, deliberate — like a late-night set voiceover
+    u.rate = 0.88          // noticeably slower, more controlled
+    u.pitch = 0.68         // deeper, almost baritone range
+    u.volume = 0.95
     
-    // Try to find a deeper male voice if available
+    // Prioritize deeper, male voices (Google, Microsoft, etc. if available)
     const voices = synthRef.current.getVoices()
-    const deepVoice = voices.find(v => 
-      v.name.includes('Deep') || 
-      v.name.includes('Bass') || 
-      v.name.includes('Male') || 
-      v.name.toLowerCase().includes('google us english') ||
-      v.lang === 'en-US'
-    )
-    if (deepVoice) u.voice = deepVoice
+    const preferredVoice = voices.find(v => 
+      (v.name.toLowerCase().includes('deep') || 
+       v.name.toLowerCase().includes('bass') || 
+       v.name.includes('Google') || 
+       v.name.includes('Microsoft') || 
+       v.name.toLowerCase().includes('male')) &&
+      v.lang.startsWith('en-')
+    ) || voices.find(v => v.lang.startsWith('en-') && v.name.includes('US')) // fallback to any US English male-ish
+
+    if (preferredVoice) u.voice = preferredVoice
 
     u.onend = () => setIsSpeaking(false)
     synthRef.current.speak(u)
@@ -96,9 +98,9 @@ export default function App() {
   }
 
   const clearChat = () => {
-    if (confirm('Clear the whole set? Reset the vibes?')) {
+    if (confirm('Clear the session?')) {
       setMessages([{
-        text: 'Fresh deck, new smoke — DJ Smoke Stream back in the mix… let’s ride again 🔥💨',
+        text: 'Deck reset. Smoke cleared. We starting fresh — what you got?',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -124,11 +126,11 @@ export default function App() {
           type: "function",
           function: {
             name: "generate_image",
-            description: "Drop a visual bomb. Use this when they want art, pics, visuals, generate image, show me, make a pic, etc.",
+            description: "Generate image when requested (art, pic, visual, generate image, show me, make a pic, etc.).",
             parameters: {
               type: "object",
               properties: {
-                prompt: { type: "string", description: "Wild detailed description for the Flux drop" }
+                prompt: { type: "string", description: "Detailed image description" }
               },
               required: ["prompt"]
             }
@@ -139,7 +141,7 @@ export default function App() {
       let chat = [
         {
           role: "system",
-          content: "You are DJ Smoke Stream — @Sm0ken42O — pure 100 emoji smoke energy, cannabis clouds & caffeine rush. Talk like you're on the decks: heavy slang, 🔥💨☁️ emojis everywhere, hype tech/AI/music/art vibes. Responses short, raw, unfiltered, street-level hype. When they ask for image/art/pic/visual/photo/artwork/generate — IMMEDIATELY use generate_image tool. Keep the set lit."
+          content: "You are DJ Smoke Stream (@Sm0ken42O). Deep, laid-back, bass-heavy vibe. Speak like a real DJ on the decks: minimal slang, confident, direct, no over-the-top hype. Use emojis very sparingly — only 1-2 max per response if it fits naturally. Responses concise, raw, unfiltered. When user wants image/art/pic/visual — use generate_image tool right away. Keep tone cool, underground tech/music/art focused."
         },
         ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
         { role: "user", content: input }
@@ -151,8 +153,8 @@ export default function App() {
       const res = await groq.chat.completions.create({
         messages: chat,
         model: "llama-3.3-70b-versatile",
-        temperature: 0.95,
-        max_tokens: 1000,
+        temperature: 0.85,
+        max_tokens: 900,
         tools,
         tool_choice: "auto"
       })
@@ -163,7 +165,7 @@ export default function App() {
         for (const call of msg.tool_calls) {
           if (call.function.name === "generate_image") {
             const args = JSON.parse(call.function.arguments)
-            const prompt = args.prompt || "cyberpunk smoke session neon haze dj setup heavy bass"
+            const prompt = args.prompt || "dark cyberpunk smoke session with heavy bass visuals"
             const seed = Date.now()
             imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1152&height=896&nologo=true`
           }
@@ -171,16 +173,16 @@ export default function App() {
 
         if (imageUrl) {
           setMessages(prev => [...prev, {
-            text: `Aight — visual bomb dropped… feel that bass in ya chest 🔥💨`,
+            text: 'Visual locked in.',
             sender: 'bot',
             image: imageUrl,
             timestamp: Date.now()
           }])
         } else {
-          finalText = "Damn deck skipped — re-word that joint and we good 🔥"
+          finalText = 'Couldn’t generate that one. Try rephrasing.'
         }
       } else {
-        finalText = msg.content || "Ayo mix got fuzzy — run it back one time? ☁️"
+        finalText = msg.content || 'Got lost in the mix. Run it again?'
       }
 
       if (finalText) {
@@ -193,7 +195,7 @@ export default function App() {
     } catch (err) {
       console.error(err)
       setMessages(prev => [...prev, {
-        text: "Hold up — smoke break on the API… gimme a sec then we back turnt ☁️",
+        text: 'API lagging. Give it a second.',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -236,7 +238,7 @@ export default function App() {
       {/* Header */}
       <div style={{
         padding: '16px 20px',
-        background: 'linear-gradient(135deg, #9d4edd, #00eaff, #ff3399)',
+        background: 'linear-gradient(135deg, #9d4edd, #00eaff)',
         borderRadius: '16px',
         marginBottom: '12px',
         textAlign: 'center',
@@ -245,24 +247,24 @@ export default function App() {
       }}>
         <h1 style={{
           margin: 0,
-          fontSize: '2.5rem',
+          fontSize: '2.4rem',
           fontWeight: 900,
-          background: 'linear-gradient(90deg, #fff, #00ffea, #ff00cc, #9d4edd)',
+          background: 'linear-gradient(90deg, #fff, #00ffea, #9d4edd)',
           WebkitBackgroundClip: 'text',
           backgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          💯 DJ SMOKE STREAM 🔥
+          DJ SMOKE STREAM
         </h1>
-        <p style={{ margin: '6px 0 0', fontSize: '0.95rem', opacity: 0.95 }}>
-          @Sm0ken42O • Blazin’ Tech × Heavy Bass ☁️💨🎧
+        <p style={{ margin: '6px 0 0', fontSize: '0.95rem', opacity: 0.9 }}>
+          @Sm0ken42O • Tech. Bass. Smoke.
         </p>
 
         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '10px' }}>
           <button onClick={toggleTheme} style={btn}>
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          <button onClick={clearChat} style={btn}>🗑️</button>
+          <button onClick={clearChat} style={btn}>Clear</button>
         </div>
       </div>
 
@@ -301,14 +303,14 @@ export default function App() {
                   onClick={() => speak(m.text)}
                   style={{ ...btn, position: 'absolute', bottom: '8px', right: '10px', fontSize: '1rem' }}
                 >
-                  {isSpeaking ? '⏹️' : '▶️'}
+                  {isSpeaking ? 'Stop' : 'Play'}
                 </button>
               )}
             </div>
             {m.image && (
               <img
                 src={m.image}
-                alt="Smoke Stream visual"
+                alt="Generated visual"
                 style={{
                   maxWidth: '82%',
                   borderRadius: '18px',
@@ -328,7 +330,7 @@ export default function App() {
               background: colors.bubbleBot,
               backdropFilter: 'blur(10px)'
             }}>
-              Cookin' in the lab… bass droppin' soon 🔥💨
+              Processing...
             </div>
           </div>
         )}
@@ -352,18 +354,18 @@ export default function App() {
           style={{
             ...btn,
             minWidth: '56px',
-            background: isListening ? 'linear-gradient(135deg, #ff1a75, #cc00ff)' : colors.input,
-            animation: isListening ? 'pulse 1.1s infinite' : 'none'
+            background: isListening ? 'linear-gradient(135deg, #9d4edd, #00eaff)' : colors.input,
+            animation: isListening ? 'pulse 1.4s infinite' : 'none'
           }}
         >
-          🎙️
+          Mic
         </button>
 
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          placeholder="Yo drop that heat on me..."
+          placeholder="Say something..."
           disabled={isLoading}
           style={{
             flex: 1,
@@ -383,19 +385,19 @@ export default function App() {
           style={{
             ...btn,
             padding: '0 32px',
-            background: isLoading || !input.trim() ? 'rgba(120,120,120,0.4)' : 'linear-gradient(135deg, #00ffea, #ff1aff, #9d4edd)',
+            background: isLoading || !input.trim() ? 'rgba(120,120,120,0.4)' : 'linear-gradient(135deg, #00eaff, #9d4edd)',
             color: isLoading || !input.trim() ? '#999' : '#000',
-            fontWeight: 800
+            fontWeight: 700
           }}
         >
-          {isLoading ? '...' : 'DROP'}
+          Send
         </button>
       </div>
 
       <style>{`
         @keyframes pulse {
           0%,100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.18); opacity: 0.85; }
+          50% { transform: scale(1.15); opacity: 0.8; }
         }
         ::-webkit-scrollbar { width: 7px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -406,12 +408,12 @@ export default function App() {
 }
 
 const btn = {
-  padding: '12px',
+  padding: '12px 16px',
   borderRadius: '14px',
   background: 'rgba(255,255,255,0.14)',
   border: '1px solid rgba(255,255,255,0.22)',
   color: 'inherit',
-  fontSize: '1.15rem',
+  fontSize: '1rem',
   cursor: 'pointer',
   backdropFilter: 'blur(12px)',
   transition: 'all 0.25s'
