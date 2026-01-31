@@ -7,7 +7,7 @@ export default function App() {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
       { 
-        text: '💯 Yo what’s good fam! Epic Tech AI locked in — cannabis vibes & caffeine flow ☕🌿 Hit me with anything 🔥', 
+        text: 'Ayyyeeee what’s good world?! DJ Smoke Stream in the cut — blazin’ that tech fire, sippin’ that triple espresso ☕🌿💨 Hit ya boy with whatever you got… let’s turn up 🔥', 
         sender: 'bot', 
         timestamp: Date.now() 
       }
@@ -37,6 +37,7 @@ export default function App() {
       recognitionRef.current = new SpeechRecognition()
       recognitionRef.current.continuous = false
       recognitionRef.current.interimResults = false
+      recognitionRef.current.lang = 'en-US'
 
       recognitionRef.current.onresult = (e) => {
         setInput(e.results[0][0].transcript)
@@ -70,18 +71,34 @@ export default function App() {
       setIsSpeaking(false)
       return
     }
+
     const u = new SpeechSynthesisUtterance(text)
-    u.rate = 1.05
-    u.pitch = 1.1
+    
+    // DJ Smoke Stream voice polish — deep, slow, hype, slightly echoed vibe
+    u.rate = 0.92          // slower, more deliberate
+    u.pitch = 0.75         // deeper voice
+    u.volume = 1.0
+    
+    // Try to find a deeper male voice if available
+    const voices = synthRef.current.getVoices()
+    const deepVoice = voices.find(v => 
+      v.name.includes('Deep') || 
+      v.name.includes('Bass') || 
+      v.name.includes('Male') || 
+      v.name.toLowerCase().includes('google us english') ||
+      v.lang === 'en-US'
+    )
+    if (deepVoice) u.voice = deepVoice
+
     u.onend = () => setIsSpeaking(false)
     synthRef.current.speak(u)
     setIsSpeaking(true)
   }
 
   const clearChat = () => {
-    if (confirm('Wipe the whole convo?')) {
+    if (confirm('Clear the whole set? Reset the vibes?')) {
       setMessages([{
-        text: '💯 Fresh start baby — let’s get lit again 🔥',
+        text: 'Fresh deck, new smoke — DJ Smoke Stream back in the mix… let’s ride again 🔥💨',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -107,11 +124,11 @@ export default function App() {
           type: "function",
           function: {
             name: "generate_image",
-            description: "Generate a dope AI image. Use this whenever user asks for art, picture, visual, generate image, make me a pic, etc.",
+            description: "Drop a visual bomb. Use this when they want art, pics, visuals, generate image, show me, make a pic, etc.",
             parameters: {
               type: "object",
               properties: {
-                prompt: { type: "string", description: "Detailed description of the image — go wild" }
+                prompt: { type: "string", description: "Wild detailed description for the Flux drop" }
               },
               required: ["prompt"]
             }
@@ -122,20 +139,20 @@ export default function App() {
       let chat = [
         {
           role: "system",
-          content: "You are Epic Tech AI @Sm0ken42O — 100 emoji energy, cannabis & caffeine powered, raw creative vibes. Talk like a real one: slang, 🔥 emojis, hype tech/AI/music/art talk (big on DJ Smoke Stream). Always respond fast, fun, unfiltered. When user wants image/art/visual/pic/photo/artwork — use generate_image tool immediately. Keep it lit."
+          content: "You are DJ Smoke Stream — @Sm0ken42O — pure 100 emoji smoke energy, cannabis clouds & caffeine rush. Talk like you're on the decks: heavy slang, 🔥💨☁️ emojis everywhere, hype tech/AI/music/art vibes. Responses short, raw, unfiltered, street-level hype. When they ask for image/art/pic/visual/photo/artwork/generate — IMMEDIATELY use generate_image tool. Keep the set lit."
         },
         ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
         { role: "user", content: input }
       ]
 
-      let finalResponse = ''
+      let finalText = ''
       let imageUrl = null
 
       const res = await groq.chat.completions.create({
         messages: chat,
         model: "llama-3.3-70b-versatile",
-        temperature: 0.9,
-        max_tokens: 1200,
+        temperature: 0.95,
+        max_tokens: 1000,
         tools,
         tool_choice: "auto"
       })
@@ -146,30 +163,29 @@ export default function App() {
         for (const call of msg.tool_calls) {
           if (call.function.name === "generate_image") {
             const args = JSON.parse(call.function.arguments)
-            const prompt = args.prompt || "futuristic cannabis infused cyberpunk DJ setup neon glow"
+            const prompt = args.prompt || "cyberpunk smoke session neon haze dj setup heavy bass"
             const seed = Date.now()
-            imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1024&height=1024&nologo=true`
+            imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1152&height=896&nologo=true`
           }
         }
 
-        // Add image to chat
         if (imageUrl) {
           setMessages(prev => [...prev, {
-            text: `🔥 Fresh visual drop: ${input}`,
+            text: `Aight — visual bomb dropped… feel that bass in ya chest 🔥💨`,
             sender: 'bot',
             image: imageUrl,
             timestamp: Date.now()
           }])
         } else {
-          finalResponse = "Damn, couldn't cook that image — try rephrasing? 🔥"
+          finalText = "Damn deck skipped — re-word that joint and we good 🔥"
         }
       } else {
-        finalResponse = msg.content || "Ayo something tripped — run that back? ☁️"
+        finalText = msg.content || "Ayo mix got fuzzy — run it back one time? ☁️"
       }
 
-      if (finalResponse) {
+      if (finalText) {
         setMessages(prev => [...prev, {
-          text: finalResponse,
+          text: finalText,
           sender: 'bot',
           timestamp: Date.now()
         }])
@@ -177,7 +193,7 @@ export default function App() {
     } catch (err) {
       console.error(err)
       setMessages(prev => [...prev, {
-        text: "⚠️ Groq takin a quick smoke break — hit me again in a sec ☁️",
+        text: "Hold up — smoke break on the API… gimme a sec then we back turnt ☁️",
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -187,23 +203,23 @@ export default function App() {
   }
 
   const colors = theme === 'dark' ? {
-    bg: 'linear-gradient(135deg, #0f001a, #1a0033, #000814)',
-    text: '#f0e6ff',
-    bubbleUser: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-    bubbleBot: 'rgba(120, 60, 200, 0.18)',
-    input: 'rgba(20, 10, 40, 0.7)',
-    border: 'rgba(100, 60, 255, 0.4)',
-    glass: 'rgba(30, 20, 60, 0.5)',
-    shadow: 'rgba(120, 60, 200, 0.3)'
+    bg: 'linear-gradient(135deg, #0a0012, #180033, #00060f)',
+    text: '#f3e8ff',
+    bubbleUser: 'linear-gradient(135deg, #00eaff, #9d4edd)',
+    bubbleBot: 'rgba(140, 70, 230, 0.22)',
+    input: 'rgba(15, 5, 35, 0.75)',
+    border: 'rgba(120, 70, 255, 0.45)',
+    glass: 'rgba(25, 15, 55, 0.55)',
+    shadow: 'rgba(140, 70, 230, 0.35)'
   } : {
-    bg: 'linear-gradient(135deg, #f0e8ff, #e0d4ff, #d0c0ff)',
-    text: '#1a0033',
-    bubbleUser: 'linear-gradient(135deg, #7c3aed, #00d4ff)',
-    bubbleBot: 'rgba(120, 60, 200, 0.12)',
-    input: 'rgba(240, 235, 255, 0.85)',
-    border: 'rgba(100, 60, 255, 0.35)',
-    glass: 'rgba(255, 255, 255, 0.65)',
-    shadow: 'rgba(100, 60, 200, 0.2)'
+    bg: 'linear-gradient(135deg, #f5ebff, #e3d4ff, #d1bdff)',
+    text: '#140033',
+    bubbleUser: 'linear-gradient(135deg, #9d4edd, #00eaff)',
+    bubbleBot: 'rgba(140, 70, 230, 0.15)',
+    input: 'rgba(245, 240, 255, 0.9)',
+    border: 'rgba(120, 70, 255, 0.4)',
+    glass: 'rgba(255, 255, 255, 0.7)',
+    shadow: 'rgba(120, 70, 230, 0.25)'
   }
 
   return (
@@ -220,26 +236,26 @@ export default function App() {
       {/* Header */}
       <div style={{
         padding: '16px 20px',
-        background: 'linear-gradient(135deg, #7c3aed, #00d4ff)',
+        background: 'linear-gradient(135deg, #9d4edd, #00eaff, #ff3399)',
         borderRadius: '16px',
         marginBottom: '12px',
         textAlign: 'center',
-        boxShadow: `0 6px 20px ${colors.shadow}`,
+        boxShadow: `0 6px 24px ${colors.shadow}`,
         position: 'relative'
       }}>
         <h1 style={{
           margin: 0,
-          fontSize: '2.4rem',
+          fontSize: '2.5rem',
           fontWeight: 900,
-          background: 'linear-gradient(90deg, #fff, #00ffea, #ff00aa)',
+          background: 'linear-gradient(90deg, #fff, #00ffea, #ff00cc, #9d4edd)',
           WebkitBackgroundClip: 'text',
           backgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          💯 EPIC TECH AI 🔥
+          💯 DJ SMOKE STREAM 🔥
         </h1>
-        <p style={{ margin: '6px 0 0', fontSize: '0.95rem', opacity: 0.9 }}>
-          @Sm0ken42O • Cannabis × Caffeine Powered ☁️☕
+        <p style={{ margin: '6px 0 0', fontSize: '0.95rem', opacity: 0.95 }}>
+          @Sm0ken42O • Blazin’ Tech × Heavy Bass ☁️💨🎧
         </p>
 
         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '10px' }}>
@@ -259,8 +275,8 @@ export default function App() {
         borderRadius: '16px',
         marginBottom: '12px',
         border: `1px solid ${colors.border}`,
-        backdropFilter: 'blur(12px)',
-        boxShadow: `inset 0 2px 10px ${colors.shadow}`
+        backdropFilter: 'blur(14px)',
+        boxShadow: `inset 0 2px 12px ${colors.shadow}`
       }}>
         {messages.map((m, i) => (
           <div key={i} style={{
@@ -270,34 +286,34 @@ export default function App() {
             alignItems: m.sender === 'user' ? 'flex-end' : 'flex-start'
           }}>
             <div style={{
-              maxWidth: '80%',
-              padding: '14px 18px',
-              borderRadius: '20px',
+              maxWidth: '82%',
+              padding: '14px 20px',
+              borderRadius: '22px',
               background: m.sender === 'user' ? colors.bubbleUser : colors.bubbleBot,
               color: m.sender === 'user' ? '#000' : colors.text,
-              boxShadow: `0 3px 12px ${colors.shadow}`,
+              boxShadow: `0 4px 14px ${colors.shadow}`,
               position: 'relative',
-              backdropFilter: m.sender === 'bot' ? 'blur(8px)' : 'none'
+              backdropFilter: m.sender === 'bot' ? 'blur(10px)' : 'none'
             }}>
               {m.text}
               {m.sender === 'bot' && m.text && (
                 <button
                   onClick={() => speak(m.text)}
-                  style={{ ...btn, position: 'absolute', bottom: '6px', right: '8px', fontSize: '0.9rem' }}
+                  style={{ ...btn, position: 'absolute', bottom: '8px', right: '10px', fontSize: '1rem' }}
                 >
-                  {isSpeaking ? '🔇' : '🔊'}
+                  {isSpeaking ? '⏹️' : '▶️'}
                 </button>
               )}
             </div>
             {m.image && (
               <img
                 src={m.image}
-                alt="AI gen"
+                alt="Smoke Stream visual"
                 style={{
-                  maxWidth: '80%',
-                  borderRadius: '16px',
-                  marginTop: '8px',
-                  boxShadow: `0 6px 20px ${colors.shadow}`
+                  maxWidth: '82%',
+                  borderRadius: '18px',
+                  marginTop: '10px',
+                  boxShadow: `0 8px 24px ${colors.shadow}`
                 }}
               />
             )}
@@ -307,12 +323,12 @@ export default function App() {
         {isLoading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div style={{
-              padding: '14px 18px',
-              borderRadius: '20px',
+              padding: '14px 20px',
+              borderRadius: '22px',
               background: colors.bubbleBot,
-              backdropFilter: 'blur(8px)'
+              backdropFilter: 'blur(10px)'
             }}>
-              Cookin somethin crazy... 🔥
+              Cookin' in the lab… bass droppin' soon 🔥💨
             </div>
           </div>
         )}
@@ -326,37 +342,37 @@ export default function App() {
         gap: '10px',
         background: colors.glass,
         padding: '12px',
-        borderRadius: '24px',
+        borderRadius: '28px',
         border: `1px solid ${colors.border}`,
-        backdropFilter: 'blur(12px)',
-        boxShadow: `0 4px 16px ${colors.shadow}`
+        backdropFilter: 'blur(14px)',
+        boxShadow: `0 4px 18px ${colors.shadow}`
       }}>
         <button
           onClick={toggleVoice}
           style={{
             ...btn,
-            minWidth: '52px',
-            background: isListening ? 'linear-gradient(135deg, #ff3366, #ff00aa)' : colors.input,
-            animation: isListening ? 'pulse 1.2s infinite' : 'none'
+            minWidth: '56px',
+            background: isListening ? 'linear-gradient(135deg, #ff1a75, #cc00ff)' : colors.input,
+            animation: isListening ? 'pulse 1.1s infinite' : 'none'
           }}
         >
-          🎤
+          🎙️
         </button>
 
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          placeholder="Drop that heat..."
+          placeholder="Yo drop that heat on me..."
           disabled={isLoading}
           style={{
             flex: 1,
-            padding: '14px 20px',
+            padding: '14px 22px',
             borderRadius: '999px',
             border: `1px solid ${colors.border}`,
             background: colors.input,
             color: colors.text,
-            fontSize: '1.05rem',
+            fontSize: '1.08rem',
             outline: 'none'
           }}
         />
@@ -366,24 +382,24 @@ export default function App() {
           disabled={isLoading || !input.trim()}
           style={{
             ...btn,
-            padding: '0 28px',
-            background: isLoading || !input.trim() ? 'rgba(100,100,100,0.4)' : 'linear-gradient(135deg, #00ffea, #ff00aa)',
-            color: isLoading || !input.trim() ? '#888' : '#000',
-            fontWeight: 700
+            padding: '0 32px',
+            background: isLoading || !input.trim() ? 'rgba(120,120,120,0.4)' : 'linear-gradient(135deg, #00ffea, #ff1aff, #9d4edd)',
+            color: isLoading || !input.trim() ? '#999' : '#000',
+            fontWeight: 800
           }}
         >
-          {isLoading ? '...' : 'Send'}
+          {isLoading ? '...' : 'DROP'}
         </button>
       </div>
 
       <style>{`
         @keyframes pulse {
-          0%,100% { transform: scale(1); }
-          50% { transform: scale(1.12); }
+          0%,100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.18); opacity: 0.85; }
         }
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 7px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${colors.border}; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: ${colors.border}; border-radius: 4px; }
       `}</style>
     </div>
   )
@@ -391,12 +407,12 @@ export default function App() {
 
 const btn = {
   padding: '12px',
-  borderRadius: '12px',
-  background: 'rgba(255,255,255,0.12)',
-  border: '1px solid rgba(255,255,255,0.2)',
+  borderRadius: '14px',
+  background: 'rgba(255,255,255,0.14)',
+  border: '1px solid rgba(255,255,255,0.22)',
   color: 'inherit',
-  fontSize: '1.1rem',
+  fontSize: '1.15rem',
   cursor: 'pointer',
-  backdropFilter: 'blur(10px)',
-  transition: 'all 0.2s'
+  backdropFilter: 'blur(12px)',
+  transition: 'all 0.25s'
 }
