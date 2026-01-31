@@ -7,7 +7,7 @@ export default function App() {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
       { 
-        text: 'Locked in. Epic Tech AI online. Heavy bass, clear signal. What you bringing to the session?', 
+        text: 'Epic Tech AI online. Signal strong, bass deep. What you got for the session?', 
         sender: 'bot', 
         timestamp: Date.now() 
       }
@@ -30,7 +30,6 @@ export default function App() {
     localStorage.setItem('chatHistory', JSON.stringify(messages))
   }, [messages])
 
-  // Speech recognition
   useEffect(() => {
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -73,20 +72,14 @@ export default function App() {
     }
 
     const u = new SpeechSynthesisUtterance(text)
-    
-    // DJ Smoke Stream deep/laid-back polish
     u.rate = 0.88
     u.pitch = 0.68
     u.volume = 0.95
-    
+
     const voices = synthRef.current.getVoices()
     const preferred = voices.find(v => 
       v.lang.startsWith('en-') && 
-      (v.name.toLowerCase().includes('deep') || 
-       v.name.includes('Google') || 
-       v.name.includes('Microsoft') || 
-       v.name.toLowerCase().includes('male') || 
-       v.name.includes('US'))
+      (v.name.toLowerCase().includes('deep') || v.name.includes('Google') || v.name.includes('Microsoft') || v.name.toLowerCase().includes('male'))
     ) || voices.find(v => v.lang.startsWith('en-'))
 
     if (preferred) u.voice = preferred
@@ -97,9 +90,9 @@ export default function App() {
   }
 
   const clearChat = () => {
-    if (confirm('Reset session?')) {
+    if (confirm('Clear session?')) {
       setMessages([{
-        text: 'Session cleared. Back to baseline. What's next?',
+        text: 'Session reset. Clean slate. What's next?',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -125,11 +118,11 @@ export default function App() {
           type: "function",
           function: {
             name: "generate_image",
-            description: "Generate image on request (art, pic, visual, generate image, show me, etc.).",
+            description: "Generate image when user asks for art, pic, visual, generate image, show me, etc.",
             parameters: {
               type: "object",
               properties: {
-                prompt: { type: "string", description: "Detailed description for generation" }
+                prompt: { type: "string", description: "Detailed prompt for image generation" }
               },
               required: ["prompt"]
             }
@@ -140,7 +133,7 @@ export default function App() {
       let chat = [
         {
           role: "system",
-          content: "You are Epic Tech AI with DJ Smoke Stream energy — deep, laid-back, bass-heavy delivery. Tone: cool, direct, confident, underground. Use emojis very rarely (max 1 per response, only if it fits naturally). Responses concise, raw, no fluff. When user wants image/art/pic/visual — use generate_image tool immediately. Stay in character: tech, music, smoke vibes."
+          content: "You are Epic Tech AI powered by DJ Smoke Stream energy: deep, laid-back, confident, underground tone. Keep responses concise, direct, no fluff. Emojis rare (max 1, only when it fits). When user wants image/art/visual/pic — use generate_image tool immediately."
         },
         ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
         { role: "user", content: input }
@@ -164,7 +157,7 @@ export default function App() {
         for (const call of msg.tool_calls) {
           if (call.function.name === "generate_image") {
             const args = JSON.parse(call.function.arguments)
-            const prompt = args.prompt || "dark atmospheric tech smoke session heavy bass visual"
+            const prompt = args.prompt || "dark atmospheric tech smoke session heavy bass aesthetic"
             const seed = Date.now()
             imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&seed=${seed}&width=1152&height=896&nologo=true`
           }
@@ -178,10 +171,10 @@ export default function App() {
             timestamp: Date.now()
           }])
         } else {
-          finalText = 'Generation failed. Try again.'
+          finalText = 'Could not generate image. Try again.'
         }
       } else {
-        finalText = msg.content || 'Signal dropped. Say again?'
+        finalText = msg.content || 'Signal interrupted. Repeat?'
       }
 
       if (finalText) {
@@ -194,7 +187,7 @@ export default function App() {
     } catch (err) {
       console.error(err)
       setMessages(prev => [...prev, {
-        text: 'Connection lag. Hold tight.',
+        text: 'Connection issue. Wait a moment.',
         sender: 'bot',
         timestamp: Date.now()
       }])
@@ -207,26 +200,26 @@ export default function App() {
     bg: 'linear-gradient(135deg, #0a0012 0%, #180033 50%, #00060f 100%)',
     text: '#f3e8ff',
     bubbleUser: 'linear-gradient(135deg, #00eaff, #9d4edd)',
-    bubbleBot: 'rgba(140, 70, 230, 0.28)',
-    input: 'rgba(15, 5, 35, 0.85)',
-    border: 'rgba(120, 70, 255, 0.35)',
-    glass: 'rgba(25, 15, 55, 0.65)',
-    shadow: 'rgba(140, 70, 230, 0.3)'
+    bubbleBot: 'rgba(140, 70, 230, 0.32)',
+    input: 'rgba(15, 5, 35, 0.9)',
+    border: 'rgba(120, 70, 255, 0.3)',
+    glass: 'rgba(25, 15, 55, 0.7)',
+    shadow: 'rgba(140, 70, 230, 0.28)'
   } : {
     bg: 'linear-gradient(135deg, #f5ebff 0%, #e3d4ff 50%, #d1bdff 100%)',
     text: '#140033',
     bubbleUser: 'linear-gradient(135deg, #9d4edd, #00eaff)',
-    bubbleBot: 'rgba(140, 70, 230, 0.18)',
-    input: 'rgba(245, 240, 255, 0.92)',
-    border: 'rgba(120, 70, 255, 0.3)',
-    glass: 'rgba(255, 255, 255, 0.78)',
-    shadow: 'rgba(120, 70, 230, 0.22)'
+    bubbleBot: 'rgba(140, 70, 230, 0.2)',
+    input: 'rgba(245, 240, 255, 0.95)',
+    border: 'rgba(120, 70, 255, 0.28)',
+    glass: 'rgba(255, 255, 255, 0.82)',
+    shadow: 'rgba(120, 70, 230, 0.2)'
   }
 
   return (
     <div style={{
-      height: '100vh',
-      width: '100vw',
+      position: 'fixed',
+      inset: 0,
       margin: 0,
       padding: 0,
       background: colors.bg,
@@ -236,7 +229,7 @@ export default function App() {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Header - full width, no side padding */}
+      {/* Header */}
       <div style={{
         padding: '16px 0',
         background: 'linear-gradient(135deg, #9d4edd, #00eaff)',
@@ -266,15 +259,13 @@ export default function App() {
         </div>
       </div>
 
-      {/* Messages - full bleed, minimal padding */}
+      {/* Messages area */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
         padding: '16px',
         background: colors.glass,
-        borderTop: `1px solid ${colors.border}`,
-        borderBottom: `1px solid ${colors.border}`,
-        backdropFilter: 'blur(14px)',
+        backdropFilter: 'blur(16px)',
         boxShadow: `inset 0 2px 12px ${colors.shadow}`
       }}>
         {messages.map((m, i) => (
@@ -335,14 +326,13 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input - full width, no extra gaps */}
+      {/* Input bar */}
       <div style={{
         display: 'flex',
         gap: '10px',
         padding: '12px',
         background: colors.glass,
-        borderTop: `1px solid ${colors.border}`,
-        backdropFilter: 'blur(14px)',
+        backdropFilter: 'blur(16px)',
         boxShadow: `0 -4px 16px ${colors.shadow}`
       }}>
         <button
@@ -391,13 +381,16 @@ export default function App() {
       </div>
 
       <style>{`
-        html, body {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-          width: 100%;
-          background: ${colors.bg};
-          overflow: hidden;
+        html, body, #root {
+          margin: 0 !important;
+          padding: 0 !important;
+          height: 100% !important;
+          width: 100% !important;
+          overflow: hidden !important;
+          background: ${colors.bg} !important;
+        }
+        * {
+          box-sizing: border-box;
         }
         @keyframes pulse {
           0%,100% { transform: scale(1); opacity: 1; }
