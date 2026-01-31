@@ -1,0 +1,26 @@
+{
+  "short_name": "Epic AI",
+  "name": "Epic Tech AI",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "fullscreen",  // Full-screen mode on mobile (no browser UI, edge-to-edge)
+  "theme_color": "#0a0012",
+  "background_color": "#0a0012",
+  "orientation": "portrait"  // Default to portrait for chat app feel
+}
